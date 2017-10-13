@@ -44,7 +44,7 @@ computation falls behind.
 
 Since the car is fast moving while being controlled at much shorter
 intervals, there is no point predicting its trajectory more than a
-second into the future.
+second or two into the future.
 
 As for the timestep length, I chose 0.1 second because it is short
 enough to keep the car in the course and long enough to keep
@@ -60,13 +60,11 @@ results:
   10  0.05  fail
   20  0.05  fail
   5   0.1   fail
-  10  0.1   success; fastest wrap
+  10  0.1   success; smooth, fast wrap
   20  0.1   success; slows down at corners
   5   0.2   failure
   10  0.2   success
   20  0.2   success; slows down at corners
-
-10 for N and 0.1 for dt produced the smoothest, fastest wrap.
 
 ----------------------------------------------------------------------------------
 3. Polynomial Fitting and MPC Preprocessing
@@ -74,9 +72,9 @@ results:
 Simulator provided state values (i.e. waypoints, x, y, psi, and v) are
 preprocessed as follows:
 
-  1. To handle actuation latencies, the state at 0.1 second into the
-     future is calculated with the aforementioned update
-     equations. All subsequent computations will use that state.
+  1. To handle actuation latencies, the state is artificially advanced
+     by 0.1 second with the aforementioned update equations. All
+     subsequent computations will use that state.
   2. Create the following matrix that converts global coordinates into
      car's local coordinates.
     
