@@ -7,6 +7,22 @@
 using namespace std;
 using CppAD::AD;
 
+/*
+  (N, dt) experiment results:
+
+  N   dt    Result
+  ----------------------------------------------------------
+  5   0.05  fail
+  10  0.05  fail
+  20  0.05  fail
+  5   0.1   fail
+  10  0.1   success; fastest wrap
+  20  0.1   success; slows down at corners
+  5   0.2   failure
+  10  0.2   success
+  20  0.2   success; slows down at corners
+ */
+
 const size_t N = 10;
 const size_t N_control = N - 1;
 const double dt = 0.1;
