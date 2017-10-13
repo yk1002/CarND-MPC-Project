@@ -1,0 +1,101 @@
+Model Predictive Control (MPC) Rubrics
+https://review.udacity.com/#!/rubrics/896/view
+
+----------------------------------------------------------------------------------
+1. The Model (the state, actuators and update equations)
+
+The car's position, orientation, and velocity are controlled by the
+following kinematic model.
+
+States:
+  x(t), x coordinate of car at time t
+  y(t): y coordinate of car at time t
+  psi(t): orientation of car at time t
+  v(t): velocity of car at time t
+
+Actuators:
+  delta(t): steering angle at time t
+  a(t): throttle at time t
+
+Constants:
+  Lf: length from front to center of gravity
+
+Update Equations (time step: dt)
+  x(t+dt) = x(t) + v(t) * cos(psi(t)) * dt
+  y(t+dt) = y(t) + v(t) * sin(psi(t)) * dt
+  psi(t+dt) = psi(t) + v(t) / Lf * delta(t) * dt
+  v(t+dt) = v(t) + a(t) * dt
+
+----------------------------------------------------------------------------------
+2. Timestep Length and Elapsed Duration (N & dt)
+
+I chose 0.1 second as the timestep length and one second as the
+elapsed duration (N = 10 = 1/0.1) by taking into account the following
+factors:
+
+  a. How far into the future the trajectory optimization needs to look.
+  b. How fast the trajectory optimization can be solved.
+  c. Actuation latency.
+
+The combination (N, dt)=(10, 0.1) is chosen because it allows the
+trajectory optimization to look far enough into the future to control
+the car successfully while not stressing the CPU to the point that the
+computation falls behind.
+
+Since the car is fast moving while being controlled at much shorter
+intervals, there is no point predicting its trajectory more than a
+second into the future.
+
+As for the timestep length, I chose 0.1 second because it is short
+enough to keep the car in the course and long enough to keep
+computation light.  Also, since the latency of actuation is set to
+0.1, any value significantly smaller than that would not be useful.
+
+I tried the following (N, dt) combinations and got the following
+results:
+
+  N   dt    Result
+-------------------------------------------
+  5   0.05  fail
+  10  0.05  fail
+  20  0.05  fail
+  5   0.1   fail
+  10  0.1   success; fastest wrap
+  20  0.1   success; slows down at corners
+  5   0.2   failure
+  10  0.2   success
+  20  0.2   success; slows down at corners
+
+10 for N and 0.1 for dt produced the smoothest, fastest wrap.
+
+----------------------------------------------------------------------------------
+3. Polynomial Fitting and MPC Preprocessing
+
+Simulator provided state values (i.e. waypoints, x, y, psi, and v) are
+preprocessed as follows:
+
+  1. To handle actuation latencies, the state at 0.1 second into the
+     future is calculated with the aforementioned update
+     equations. All subsequent computations will use that state.
+  2. Create the following matrix that converts global coordinates into
+     car's local coordinates.
+    
+     | Xc |    |  cos(psi)  sin(psi) -sin(psi)*py-cos(psi)*px | | Xg |
+     | Yc | =  | -sin(psi)  cos(psi)  sin(psi)*px-cos(psi)*py | | Yg |
+     | 1  |    |         0         0                        1 | |  1 |
+
+ 3. Convert the waypoints to corresponding local coordinates with the
+    matrix.
+ 4. Fit a third degree polynomial to the converted waypoints.
+ 5. Compute CTE and psi errors with the fitted polynomial and its
+    derivative function.
+ 6. Pass the state and polynomial to the solver.
+
+----------------------------------------------------------------------------------
+4. Model Predictive Control with Latency
+
+To handle the 0.1 second latency in actuation, the simulator provided
+state is artificially advanced by 0.1 second during the preprocessing
+phase (see above).  That way, steering and throttle values produced by
+the solver is more relevant or "up-to-date" when they are actually put
+in use to move "hardware."
