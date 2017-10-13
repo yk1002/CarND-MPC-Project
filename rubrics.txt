@@ -8,17 +8,17 @@ The car's position, orientation, and velocity are controlled by the
 following kinematic model.
 
 States:
-  x(t), x coordinate of car at time t
-  y(t): y coordinate of car at time t
+    x(t): x coordinate of car at time t
+    y(t): y coordinate of car at time t
   psi(t): orientation of car at time t
-  v(t): velocity of car at time t
+    v(t): velocity of car at time t
 
 Actuators:
   delta(t): steering angle at time t
-  a(t): throttle at time t
+      a(t): throttle at time t
 
 Constants:
-  Lf: length from front to center of gravity
+    Lf: length from front to center of gravity
 
 Update Equations (time step: dt)
   x(t+dt) = x(t) + v(t) * cos(psi(t)) * dt
